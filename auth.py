@@ -2,6 +2,10 @@ import streamlit as st
 from PIL import Image
 import os
 from app import chat_interface
+import time
+
+# Set page config at the very beginning
+st.set_page_config(page_title="Maverick Chatbot")
 
 # CSS styles
 css = """
@@ -17,14 +21,6 @@ body {
     border: none;
     padding: 10px 0;
 }
-.stTextInput > div > div > input {
-    border-radius: 20px;
-}
-.google-button {
-    background-color: white !important;
-    color: black !important;
-    border: 1px solid #ccc !important;
-}
 .centered {
     display: flex;
     justify-content: center;
@@ -35,6 +31,9 @@ body {
 
 def welcome_page():
     st.markdown("<h1 style='text-align: center;'>Maverick Chatbot</h1>", unsafe_allow_html=True)
+    
+    # Create a placeholder for the animated text
+    text_placeholder = st.empty()
     
     image_path = "get_started.png"
     
@@ -47,78 +46,34 @@ def welcome_page():
         st.error(f"Image not found at path: {image_path}")
     
     if st.button("Get Started"):
-        st.session_state.page = 'login'
+        st.session_state.page = 'chat'
         st.rerun()
 
-def login_page():
-    st.markdown("<h1 style='text-align: center; color: #FF4B4B;'>Welcome to<br>Maverick Chatbot</h1>", unsafe_allow_html=True)
+    # List of phrases to animate
+    phrases = [
+        "Instant Retail Savvy, Just Ask!",
+        "Retail Insights on Demand!",
+        "Effortless Retail Intelligence!"
+    ]
     
-    st.text_input("Email Address")
-    st.text_input("Password", type="password")
-    
-    if st.button("Sign In"):
-        st.success("Logged in successfully!")
-        st.session_state.authenticated = True
-        st.rerun()
-    
-    st.markdown("<div style='text-align: center;'>Don't have an account? <a href='#' onclick='navigateToRegister()'>Register</a></div>", unsafe_allow_html=True)
-    
-    # JavaScript to handle navigation
-    st.markdown("""
-    <script>
-    function navigateToRegister() {
-        window.parent.postMessage({type: 'streamlit:setComponentValue', value: 'register'}, '*');
-    }
-    </script>
-    """, unsafe_allow_html=True)
-
-def register_page():
-    st.markdown("<h1 style='text-align: center; color: #FF4B4B;'>Welcome to<br>Maverick Chatbot</h1>", unsafe_allow_html=True)
-    
-    st.text_input("Email Address")
-    st.text_input("Password", type="password")
-    
-    if st.button("Register"):
-        st.success("Registered successfully!")
-    
-    st.markdown("<div style='text-align: center;'>Already have an account? <a href='#' onclick='navigateToLogin()'>Login</a></div>", unsafe_allow_html=True)
-    
-    # JavaScript to handle navigation
-    st.markdown("""
-    <script>
-    function navigateToLogin() {
-        window.parent.postMessage({type: 'streamlit:setComponentValue', value: 'login'}, '*');
-    }
-    </script>
-    """, unsafe_allow_html=True)
+    # Animation loop
+    for phrase in phrases:
+        for i in range(len(phrase) + 1):
+            text_placeholder.markdown(f"<h2 style='text-align: center; color: #FF4B4B;'>{phrase[:i]}▌</h2>", unsafe_allow_html=True)
+            time.sleep(0.05)
+        time.sleep(1)  # Pause at the end of each phrase
 
 def auth_main():
-    st.set_page_config(page_title="Maverick Chatbot")
     st.markdown(css, unsafe_allow_html=True)
 
     if 'page' not in st.session_state:
         st.session_state.page = 'welcome'
-    
-    if 'authenticated' not in st.session_state:
-        st.session_state.authenticated = False
 
-    # Handle navigation from JavaScript
-    if st.session_state.get('streamlit:setComponentValue') == 'register':
-        st.session_state.page = 'register'
-        del st.session_state['streamlit:setComponentValue']
-    elif st.session_state.get('streamlit:setComponentValue') == 'login':
-        st.session_state.page = 'login'
-        del st.session_state['streamlit:setComponentValue']
-
-    if st.session_state.authenticated:
+    if st.session_state.page == 'welcome':
+        welcome_page()
+    elif st.session_state.page == 'chat':
         chat_interface()
-    else:
-        if st.session_state.page == 'welcome':
-            welcome_page()
-        elif st.session_state.page == 'login':
-            login_page()
-        elif st.session_state.page == 'register':
-            register_page()
 
 if __name__ == "__main__":
     auth_main()
+    
